@@ -1,21 +1,13 @@
 const express = require('express');
 const fetch = require('node-fetch');
-
 const app = express();
-const PORT = 3000;
 
 app.use(express.json());
 
-// 🔥 Endpoint para procesar link
 app.post('/expandir', async (req, res) => {
-    const { link } = req.body;
-
-    if (!link) {
-        return res.json({ error: 'No hay link' });
-    }
-
     try {
-        // Seguir redirección
+        const { link } = req.body;
+
         const response = await fetch(link, {
             method: 'GET',
             redirect: 'follow'
@@ -23,15 +15,10 @@ app.post('/expandir', async (req, res) => {
 
         const finalUrl = response.url;
 
-        // Buscar coordenadas
         let match = finalUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
 
         if (!match) {
             match = finalUrl.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-        }
-
-        if (!match) {
-            match = finalUrl.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
         }
 
         if (match) {
@@ -41,13 +28,13 @@ app.post('/expandir', async (req, res) => {
             });
         }
 
-        return res.json({ error: 'No se encontraron coordenadas' });
+        res.json({ error: 'No coords' });
 
-    } catch (error) {
-        res.json({ error: 'Error al procesar link' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error' });
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+app.listen(10000, () => {
+    console.log('Servidor corriendo');
 });
